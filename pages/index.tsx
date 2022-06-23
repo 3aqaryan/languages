@@ -1,10 +1,37 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import { useTranslation } from "next-i18next"
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
+import type { NextPage } from "next";
+import Head from "next/head";
+import { useTranslation } from "next-i18next";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
+import Link from "next/link";
+import { useRouter } from "next/router";
+
+interface pageTypes{
+  locale:string
+}
+export const getStaticProps = async ({locale}:pageTypes) => {
+  return {
+    props: {
+      ...(await serverSideTranslations(locale, ["header"])),
+    },
+  };
+};
+
 
 const Home: NextPage = () => {
-  const { t } = useTranslation("common")
+  let router = useRouter();
+  const { t } = useTranslation();
+  const localName = (locale?: any) => {
+    if(locale === 'hy'){
+        return "Armenia"
+    }
+    else if(locale === 'ru'){
+      return "Russia"
+    }
+    else if(locale === 'en'){
+      return "English"
+  }
+  }
+
   return (
     <div>
       <Head>
@@ -13,26 +40,28 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-            <div className='header'>
-              <div className='navbar'>
-                    <div>{ t("home") }</div>
-                    <div>{ t("store") }</div>
-                    <div>{ t("aboutus") }</div>
-                    <div>{ t("contactus") }</div>
-                </div>
-                <div className='languages'>
-                      <div>Armenia</div>
-                      <div>English</div>
-                      <div>Russian</div>
-                </div>
-            </div>
+        <div className="header">
+          <div className="navbar">
+            <div>{t("header:home")}</div>
+            <div><Link href='/doctors'>{t("header:store")}</Link></div>
+            <div>{t("header:aboutus")}</div>
+            <div>{t("header:contactus")}</div>
+          </div>
+          <div className="languages">
+            {router.locales?.map((locale) => (
+              <div key={locale}>
+                <Link href={router.asPath} locale={locale}>
+                  <a>{localName(locale)}</a>
+                </Link>
+              </div>
+            ))}
+            {/* <div><Link href="/hy">Armenia</Link></div>
+                      <div><Link href="/en">English</Link></div>
+                      <div><Link href="/ru">Russian</Link></div> */}
+          </div>
+        </div>
       </main>
     </div>
-  )
-}
-export const getStaticProps = async ({ locale }) => ({
-  props: {
-    ...await serverSideTranslations("en", ['common']),
-  },
-})
-export default Home
+  );
+};
+export default Home;
